@@ -1,5 +1,6 @@
 // HTML
-const pokedexList = document.querySelector(".js-pokedex__list");
+const pokedexList = document.querySelector<HTMLElement>(".js-pokedex__list");
+const buttonShowMore = document.querySelector<HTMLElement>(".js-btn--show-more");
 
 const pokemonTemplate = (pokemon: IPokemonData) => {
     return `
@@ -13,7 +14,7 @@ const pokemonTemplate = (pokemon: IPokemonData) => {
 
 // Variables
 let offset: number = 0;
-const url: string = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
+let url: string = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
 let pokemonsArr: IPokemonData[] = [];
 
 // Interfaces
@@ -38,13 +39,13 @@ interface IPokemonData {
 }
 
 // Functions
-const fetchPokemonsList = async() => {
+const fetchPokemonsList = async(): Promise<IPokemonData[]> => {
     try {
         // Fetch pokemons list from url
         const pokemonsListResponse: Response = await fetch(url);
         const pokemonsListData: IPokemonsListData = await pokemonsListResponse.json();
         const pokemonsList: IPokemonsList[] = await pokemonsListData.results;
-        console.log(pokemonsList);
+ 
         // Fetch every listed pokemon's data by it's url
         const fetchPokemon = pokemonsList.map(async(pokemon) => {
             const pokemonResponse = await fetch(pokemon.url)
@@ -57,25 +58,58 @@ const fetchPokemonsList = async() => {
         })
         // Returning every pokemonData as a promise
         const listedPokemons = await Promise.all(fetchPokemon)
-        addPokemon(listedPokemons);
-        console.log(pokemonsArr)
+        // For TSC: Must RETURN a value
+        return listedPokemons;
+
     } catch(error) {
-        console.log("error trying to fetch pokemon list", error)
+        // For TSC: Must RETURN an error instead of log it into console
+        throw error;
     }
-    buildPokedexList(pokemonsArr);
 }
 
-const addPokemon = (list: IPokemonData[]) => {
+const addPokemon = async (list: IPokemonData[]) => {
     list.forEach(pokemon => {
-        pokemonsArr.push(pokemon)   
+        pokemonsArr.push(pokemon);
+    });
+}
+
+const buildPokedexList = async (arr: IPokemonData[]) => {
+    pokedexList!.innerHTML = '';
+    arr.map(async (pokemon) => {
+        pokedexList!.innerHTML += pokemonTemplate(pokemon);
     })
 }
 
-const buildPokedexList = (arr: IPokemonData[]) => {
-    arr.map(async (pokemon) => {
-        return pokedexList!.innerHTML += pokemonTemplate(pokemon);
-    })
+const startPokedex = async () => {
+    try {
+        const pokemonList = await fetchPokemonsList()!;
+        await addPokemon(pokemonList);
+        await buildPokedexList(pokemonsArr);
+    } catch (error) {
+        console.error("Error en la aplicación:", error);
+    }
+};
+
+const showMorePokemons = async () => {
+    await updatePokedexList();
+    return buildPokedexList(pokemonsArr);
+}
+
+const updateUrl = () => {
+    offset += 10;
+    url =`https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
+}
+
+const updatePokedexList = async() => {
+    updateUrl();
+    const newPokemonList = await fetchPokemonsList();
+    return addPokemon(newPokemonList);
 }
 
 // Main
-fetchPokemonsList();
+
+// Starting app
+window.onload = startPokedex;
+
+// Setting button show more event listener
+buttonShowMore!.addEventListener('click', showMorePokemons);

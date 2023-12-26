@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // HTML
 const pokedexList = document.querySelector(".js-pokedex__list");
+const buttonShowMore = document.querySelector(".js-btn--show-more");
 const pokemonTemplate = (pokemon) => {
     return `
         <li class="pokedex__list-item">
@@ -21,7 +22,7 @@ const pokemonTemplate = (pokemon) => {
 };
 // Variables
 let offset = 0;
-const url = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
+let url = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
 let pokemonsArr = [];
 // Functions
 const fetchPokemonsList = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -29,9 +30,7 @@ const fetchPokemonsList = () => __awaiter(void 0, void 0, void 0, function* () {
         // Fetch pokemons list from url
         const pokemonsListResponse = yield fetch(url);
         const pokemonsListData = yield pokemonsListResponse.json();
-        console.log(pokemonsListData);
         const pokemonsList = yield pokemonsListData.results;
-        console.log(pokemonsList);
         // Fetch every listed pokemon's data by it's url
         const fetchPokemon = pokemonsList.map((pokemon) => __awaiter(void 0, void 0, void 0, function* () {
             const pokemonResponse = yield fetch(pokemon.url);
@@ -44,24 +43,50 @@ const fetchPokemonsList = () => __awaiter(void 0, void 0, void 0, function* () {
         }));
         // Returning every pokemonData as a promise
         const listedPokemons = yield Promise.all(fetchPokemon);
-        console.log(listedPokemons);
-        addPokemon(listedPokemons);
-        console.log(pokemonsArr);
+        // For TSC: Must RETURN a value
+        return listedPokemons;
     }
     catch (error) {
-        console.log("error trying to fetch pokemon list", error);
+        // For TSC: Must RETURN an error instead of log it into console
+        throw error;
     }
-    buildPokedexList(pokemonsArr);
 });
-const addPokemon = (list) => {
+const addPokemon = (list) => __awaiter(void 0, void 0, void 0, function* () {
     list.forEach(pokemon => {
         pokemonsArr.push(pokemon);
     });
-};
-const buildPokedexList = (arr) => {
+});
+const buildPokedexList = (arr) => __awaiter(void 0, void 0, void 0, function* () {
+    pokedexList.innerHTML = '';
     arr.map((pokemon) => __awaiter(void 0, void 0, void 0, function* () {
-        return pokedexList.innerHTML += pokemonTemplate(pokemon);
+        pokedexList.innerHTML += pokemonTemplate(pokemon);
     }));
+});
+const startPokedex = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const pokemonList = yield fetchPokemonsList();
+        yield addPokemon(pokemonList);
+        yield buildPokedexList(pokemonsArr);
+    }
+    catch (error) {
+        console.error("Error en la aplicación:", error);
+    }
+});
+const showMorePokemons = () => __awaiter(void 0, void 0, void 0, function* () {
+    yield updatePokedexList();
+    return buildPokedexList(pokemonsArr);
+});
+const updateUrl = () => {
+    offset += 10;
+    url = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
 };
+const updatePokedexList = () => __awaiter(void 0, void 0, void 0, function* () {
+    updateUrl();
+    const newPokemonList = yield fetchPokemonsList();
+    return addPokemon(newPokemonList);
+});
 // Main
-fetchPokemonsList();
+// Starting app
+window.onload = startPokedex;
+// Setting button show more event listener
+buttonShowMore.addEventListener('click', showMorePokemons);
