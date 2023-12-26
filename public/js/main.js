@@ -8,6 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// HTML
+const pokedexList = document.querySelector(".js-pokedex__list");
+const pokemonTemplate = (pokemon) => {
+    return `
+        <li class="pokedex__list-item">
+            <img src="${pokemon.spriteUrl}" alt="${pokemon.name}">
+            <p>${pokemon.id}</p>
+            <p>${pokemon.name}</p>
+        </li>
+    `;
+};
 // Variables
 let offset = 0;
 const url = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
@@ -40,11 +51,17 @@ const fetchPokemonsList = () => __awaiter(void 0, void 0, void 0, function* () {
     catch (error) {
         console.log("error trying to fetch pokemon list", error);
     }
+    buildPokedexList(pokemonsArr);
 });
 const addPokemon = (list) => {
     list.forEach(pokemon => {
         pokemonsArr.push(pokemon);
     });
+};
+const buildPokedexList = (arr) => {
+    arr.map((pokemon) => __awaiter(void 0, void 0, void 0, function* () {
+        return pokedexList.innerHTML += pokemonTemplate(pokemon);
+    }));
 };
 // Main
 fetchPokemonsList();

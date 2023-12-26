@@ -1,3 +1,16 @@
+// HTML
+const pokedexList = document.querySelector(".js-pokedex__list");
+
+const pokemonTemplate = (pokemon: IPokemonData) => {
+    return `
+        <li class="pokedex__list-item">
+            <img src="${pokemon.spriteUrl}" alt="${pokemon.name}">
+            <p>${pokemon.id}</p>
+            <p>${pokemon.name}</p>
+        </li>
+    `
+}
+
 // Variables
 let offset: number = 0;
 const url: string = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
@@ -30,7 +43,6 @@ const fetchPokemonsList = async() => {
         // Fetch pokemons list from url
         const pokemonsListResponse: Response = await fetch(url);
         const pokemonsListData: IPokemonsListData = await pokemonsListResponse.json();
-        console.log(pokemonsListData);
         const pokemonsList: IPokemonsList[] = await pokemonsListData.results;
         console.log(pokemonsList);
         // Fetch every listed pokemon's data by it's url
@@ -45,17 +57,23 @@ const fetchPokemonsList = async() => {
         })
         // Returning every pokemonData as a promise
         const listedPokemons = await Promise.all(fetchPokemon)
-        console.log(listedPokemons);
         addPokemon(listedPokemons);
         console.log(pokemonsArr)
     } catch(error) {
         console.log("error trying to fetch pokemon list", error)
     }
+    buildPokedexList(pokemonsArr);
 }
 
 const addPokemon = (list: IPokemonData[]) => {
     list.forEach(pokemon => {
         pokemonsArr.push(pokemon)   
+    })
+}
+
+const buildPokedexList = (arr: IPokemonData[]) => {
+    arr.map(async (pokemon) => {
+        return pokedexList!.innerHTML += pokemonTemplate(pokemon);
     })
 }
 
