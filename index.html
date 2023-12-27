@@ -7,16 +7,29 @@
     <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-    <header>
-        <h1>Pokédex</h1>
-        <input type="text" class="header__search">
+    <header class="pokedex__header">
+        <h1><a href="./index.html">Pokédex</a></h1>
+        <form id="pokedex__search-form">
+            <input type="text" class="pokedex__search-input js-pokedex__search-input" placeholder="Search pokemon">
+            <button class="brn pokedex__search-submit js-pokedex__search-submit">Search</button>
+        </form>
     </header>
-    <main>
-        <ul class="pokedex__list js-pokedex__list"></ul>
-        <div class="pokedex__button--show-more">
-            <button class="btn btn--show-more js-btn--show-more">Show more</button>
-        </div>
+
+    <main class="pokedex__main">
+        <article class="pokedex__article">
+            <ul class="pokedex__list js-pokedex__list"></ul>
+            <div class="pokedex__button--show-more">
+                <button class="btn btn--show-more js-btn--show-more">Show more</button>
+            </div>
+        </article>
+        <aside>
+            <article class="pokedex__pokemon-stats js-pokedex__pokemon-stats"></article>
+        </aside>
     </main>
+
+    <footer class="pokedex__footer">
+        <p>c2023</p>
+    </footer>
 </body>
 <script src="./public/js/main.js" type="module"></script>
 </html>
