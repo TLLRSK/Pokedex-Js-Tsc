@@ -1,3 +1,14 @@
+#Build a Pokedex using Vanilla JS and Typescript
+- Load a list of pokemon
+- Every pokemon must show:
+    - Img
+    - Id number
+    - Name
+    - Types
+- Filter pokemon by Types
+- Single page for every pokemon showing data and stats
+- Search engine
+
 npm init -y para crear package.json
 tsc --init para crear tsconfig.json
 

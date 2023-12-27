@@ -4,10 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pokedex</title>
+    <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-    <ul class="pokedex__list js-pokedex__list"></ul>
-    <button class="btn--show-more js-btn--show-more">Show more</button>
+    <header>
+        <h1>Pokédex</h1>
+        <input type="text" class="header__search">
+    </header>
+    <main>
+        <ul class="pokedex__list js-pokedex__list"></ul>
+        <div class="pokedex__button--show-more">
+            <button class="btn btn--show-more js-btn--show-more">Show more</button>
+        </div>
+    </main>
 </body>
 <script src="./public/js/main.js" type="module"></script>
 </html>
