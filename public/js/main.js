@@ -9,9 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 // HTML
+const pokedexArticle = document.querySelector(".js-pokedex__article");
 const pokedexList = document.querySelector(".js-pokedex__list");
 const pokedexSearchInput = document.querySelector(".js-pokedex__search-input");
 const pokedexSearchSubmit = document.querySelector(".js-pokedex__search-submit");
+const buttonShowMoreContainer = document.querySelector(".pokedex__button--show-more");
 const buttonShowMore = document.querySelector(".js-btn--show-more");
 const pokemonStatsView = document.querySelector(".js-pokedex__pokemon-stats");
 // TEMPLATES
@@ -28,9 +30,36 @@ const pokemonTemplate = (pokemon) => {
 };
 // VARIABLES
 let offset = 0;
-let APIurl = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
+let APIurl = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=0`;
 let pokemonsArr = [];
+const pokemonsMaxNumber = 151;
 // FUNCTIONS
+// URL Management
+const pokedexUrl = () => {
+    let offset = 0;
+    let url = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=0`;
+    const getUrl = () => {
+        return url;
+    };
+    const updateOffset = () => {
+        offset += 10;
+        url = `https://pokeapi.co/api/v2/pokemon?limit=${pokemonsMaxNumber}&offset=${offset}`;
+        return getUrl();
+    };
+    const getTypeUrl = (type) => {
+        const types = {
+            normal: 1, fighting: 2, flying: 3, poison: 4, ground: 5,
+            rock: 6, bug: 7, ghost: 8, fire: 10, water: 11,
+            grass: 12, electric: 13, psychic: 14, ice: 15, dragon: 16,
+        };
+        return `https://pokeapi.co/api/v2/type/${types.type}`;
+    };
+    const getSinglePokemonUrl = (id) => {
+        url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
+        return getUrl();
+    };
+    return { getUrl, updateOffset, getTypeUrl, getSinglePokemonUrl };
+};
 // fetching
 const fetchPokemonsList = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -38,8 +67,10 @@ const fetchPokemonsList = () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield fetch(APIurl);
         const data = yield response.json();
         const pokemonsList = yield data.results;
-        // Fetch every listed pokemon's data by it's url
-        const pokemonPromises = mapPokemonPromises(pokemonsList);
+        // Fetch every listed pokemon's data by it's own url
+        const pokemonPromises = pokemonsList.map((pokemon) => __awaiter(void 0, void 0, void 0, function* () {
+            return fetchPokemon(pokemon.url);
+        }));
         // Returning every pokemonData as a promise
         const listedPokemons = yield Promise.all(pokemonPromises);
         // For TSC: Must RETURN a value
@@ -50,21 +81,7 @@ const fetchPokemonsList = () => __awaiter(void 0, void 0, void 0, function* () {
         throw error;
     }
 });
-const mapPokemonPromises = (list) => {
-    return list.map((pokemon) => __awaiter(void 0, void 0, void 0, function* () {
-        return fetchPokemon(pokemon.url);
-    }));
-};
-// const fetchPokemon = async (pokemon: IPokemonsList) => {
-//     const response = await fetch(pokemon.url)
-//     const data = await response.json();
-//     // Destructuring pokemonData to extract the info we'll need
-//     const {id, name, sprites, height, types, abilities, stats } = data;
-//     // Customizing urls
-//     const spriteUrl = sprites.versions["generation-i"].yellow["front_default"];
-//     const url = `https://pokeapi.co/api/v2/pokemon/${id}/`
-//     return { id, name, spriteUrl, height, types, abilities, stats, url };
-// }
+// Fetching single pokemon
 const fetchPokemon = (pokemonUrl) => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield fetch(pokemonUrl);
     const data = yield response.json();
@@ -72,7 +89,7 @@ const fetchPokemon = (pokemonUrl) => __awaiter(void 0, void 0, void 0, function*
     const { id, name, sprites, height, types, abilities, stats } = data;
     // Customizing urls
     const spriteUrl = sprites.versions["generation-i"].yellow["front_default"];
-    const url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
+    const url = newAPIUrl.getSinglePokemonUrl(id);
     return { id, name, spriteUrl, height, types, abilities, stats, url };
 });
 //building pokedex list
@@ -90,6 +107,24 @@ const buildPokedexList = (arr) => __awaiter(void 0, void 0, void 0, function* ()
     }));
     addEventListeners();
 });
+const buildSearchPokedexList = (arr) => {
+    // create paragraph
+    const paragraph = document.createElement("p");
+    paragraph.classList.add("pokedex__search-results-number");
+    // select
+    const searchResultsNumber = document.querySelector(".pokedex__search-results-number");
+    // check if there's a selected paragraph and paint it or not
+    if (searchResultsNumber) {
+        paragraph.textContent = `${arr.length} results founded`;
+    }
+    else {
+        paragraph.textContent = `${arr.length} results founded`;
+        pokedexArticle.insertBefore(paragraph, pokedexArticle.firstChild);
+    }
+    // remove show more button
+    buttonShowMoreContainer.remove();
+    buildPokedexList(arr);
+};
 //3. building pokedex on start
 const startPokedex = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -130,11 +165,16 @@ const pokemonStatsTemplate = (pokemonStats) => {
             <p>#${id}</p>
             <p>${name}</p>
         </div>
+        <div class="pokemon-height">Height: ${height}</div>
         <div class="pokemon-types">
-            ${buildTypesTemplate(types)}
+            <p>Type:</p>
+            <div class="pokemon-types-row">${buildTypesTemplate(types)}</div>
         </div>
         <div class="pokemon-stats">
-            ${buildStatsTemplate(stats)}
+            <p>Stats:</p>
+            <div>
+                ${buildStatsTemplate(stats)}
+            </div>
         </div>
         <div class="pokemon-abilities">
             ${buildAbilitiesTemplate(abilities)}
@@ -184,34 +224,42 @@ const buildStatsTemplate = (pokemonStatsArr) => {
         .join('');
 };
 // Search form
-const searchPokemon = (event) => __awaiter(void 0, void 0, void 0, function* () {
+const searchPokemons = (event) => __awaiter(void 0, void 0, void 0, function* () {
     event.preventDefault();
-    console.log(event.target);
-    const url = "https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0";
-    const fetchAllPokemonsList = (url) => __awaiter(void 0, void 0, void 0, function* () {
+    const filterName = pokedexSearchInput.value;
+    const allPokemonUrl = `https://pokeapi.co/api/v2/pokemon?limit=${pokemonsMaxNumber}&offset=0`;
+    const fetchSearchedPokemon = (url) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const response = yield fetch(url);
+            const response = yield fetch(allPokemonUrl);
             const data = yield response.json();
-            const allPokemonsList = yield data.results;
-            return allPokemonsList;
+            const filteredPokemonPromises = yield data.results.filter((pokemon) => pokemon.name.includes(filterName));
+            const filteredPokemonArr = yield filteredPokemonPromises.map((pokemon) => {
+                return fetchPokemon(pokemon.url);
+            });
+            return yield Promise.all(filteredPokemonArr);
         }
         catch (error) {
             throw error;
         }
     });
-    // Testing
-    const allPokemonsList = yield fetchAllPokemonsList(url);
-    const testArr = allPokemonsList.filter(pokemon => pokemon.name.includes("saur"));
-    console.log(testArr);
+    const list = yield fetchSearchedPokemon(allPokemonUrl);
+    return buildSearchPokedexList(list);
 });
 // Select show stats buttons
 const SelectShowStatsButtons = () => {
     return document.querySelectorAll(".js-btn--show-stats");
 };
+// Check search input value
+const inputHasValue = () => {
+    pokedexSearchInput.value !== ''
+        ? pokedexSearchSubmit.removeAttribute("disabled")
+        : pokedexSearchSubmit.setAttribute("disabled", "");
+};
 // Set addeventlisteners
 const addEventListeners = () => {
-    // Search input
-    pokedexSearchSubmit.addEventListener("click", searchPokemon);
+    // Search input & submit
+    pokedexSearchInput.addEventListener("input", inputHasValue);
+    pokedexSearchSubmit.addEventListener("click", searchPokemons);
     // Show more btn
     buttonShowMore.addEventListener("click", showMorePokemons);
     // Show stats btn
@@ -221,3 +269,5 @@ const addEventListeners = () => {
 // MAIN
 // Starting app
 window.onload = startPokedex;
+const newAPIUrl = pokedexUrl();
+console.log(newAPIUrl);

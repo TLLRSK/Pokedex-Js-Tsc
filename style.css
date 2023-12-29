@@ -59,6 +59,8 @@ header {
     padding: 24px;
   }
   aside {
+    display: flex;
+    flex-direction: column;
     width: 480px;
     height: 100%;
     padding: 0 24px;

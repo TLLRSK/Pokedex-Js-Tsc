@@ -1,9 +1,11 @@
 // HTML
-const pokedexList = document.querySelector<HTMLElement>(".js-pokedex__list");
-const pokedexSearchInput = document.querySelector<HTMLElement>(".js-pokedex__search-input")
-const pokedexSearchSubmit = document.querySelector<HTMLElement>(".js-pokedex__search-submit")
-const buttonShowMore = document.querySelector<HTMLElement>(".js-btn--show-more");
-const pokemonStatsView = document.querySelector<HTMLElement>(".js-pokedex__pokemon-stats");
+const pokedexArticle = document.querySelector(".js-pokedex__article") as HTMLElement;
+const pokedexList = document.querySelector(".js-pokedex__list") as HTMLElement;
+const pokedexSearchInput = document.querySelector(".js-pokedex__search-input") as HTMLInputElement | null;
+const pokedexSearchSubmit = document.querySelector(".js-pokedex__search-submit")  as HTMLElement;
+const buttonShowMoreContainer = document.querySelector(".pokedex__button--show-more") as HTMLElement;
+const buttonShowMore = document.querySelector(".js-btn--show-more") as HTMLElement;
+const pokemonStatsView = document.querySelector(".js-pokedex__pokemon-stats") as HTMLElement;
 
 // TEMPLATES
 const pokemonTemplate = (pokemon: IPokemonData) => {
@@ -20,8 +22,9 @@ const pokemonTemplate = (pokemon: IPokemonData) => {
 
 // VARIABLES
 let offset: number = 0;
-let APIurl: string = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
+let APIurl: string = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=0`;
 let pokemonsArr: IPokemonData[] = [];
+const pokemonsMaxNumber: number = 151;
 
 // INTERFACES
 interface IPokemonsListData {
@@ -75,16 +78,48 @@ interface IPokemonStat {
 }
 
 // FUNCTIONS
+
+// URL Management
+const pokedexUrl = () => {
+    let offset = 0;
+    let url = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=0`;
+
+    const getUrl = () => {
+        return url;
+    }
+    const updateOffset = () => {
+        offset += 10;
+        url = `https://pokeapi.co/api/v2/pokemon?limit=${pokemonsMaxNumber}&offset=${offset}`;
+        return getUrl();
+    }
+    const getTypeUrl = (type: string) => {
+        const types: any = {
+            normal: 1, fighting: 2, flying: 3, poison: 4, ground: 5,
+            rock: 6, bug: 7, ghost: 8, fire: 10, water: 11,
+            grass: 12, electric: 13, psychic: 14, ice: 15, dragon: 16,
+        }
+        return `https://pokeapi.co/api/v2/type/${types.type}`;
+    }
+    const getSinglePokemonUrl = (id: string) => {
+        url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
+        return getUrl()
+    }
+    return { getUrl, updateOffset, getTypeUrl, getSinglePokemonUrl}
+}
+
 // fetching
 const fetchPokemonsList = async() => {
     try {
         // Fetch pokemons list from url
+        
         const response: Response = await fetch(APIurl);
         const data: IPokemonsListData = await response.json();
         const pokemonsList: IPokemonsList[] = await data.results;
 
-        // Fetch every listed pokemon's data by it's url
-        const pokemonPromises = mapPokemonPromises(pokemonsList);
+        // Fetch every listed pokemon's data by it's own url
+        const pokemonPromises = pokemonsList.map(async(pokemon: any) => {
+            return fetchPokemon(pokemon.url);
+        })
         
         // Returning every pokemonData as a promise
         const listedPokemons = await Promise.all(pokemonPromises)
@@ -97,25 +132,7 @@ const fetchPokemonsList = async() => {
     }
 }
 
-const mapPokemonPromises = (list: IPokemonsList[]) => {
-    return list.map(async(pokemon: IPokemonsList) => {
-        return fetchPokemon(pokemon.url);
-    })
-}
-
-// const fetchPokemon = async (pokemon: IPokemonsList) => {
-//     const response = await fetch(pokemon.url)
-//     const data = await response.json();
-
-//     // Destructuring pokemonData to extract the info we'll need
-//     const {id, name, sprites, height, types, abilities, stats } = data;
-
-//     // Customizing urls
-//     const spriteUrl = sprites.versions["generation-i"].yellow["front_default"];
-//     const url = `https://pokeapi.co/api/v2/pokemon/${id}/`
-
-//     return { id, name, spriteUrl, height, types, abilities, stats, url };
-// }
+// Fetching single pokemon
 const fetchPokemon = async (pokemonUrl: string) => {
     const response = await fetch(pokemonUrl)
     const data = await response.json();
@@ -125,7 +142,7 @@ const fetchPokemon = async (pokemonUrl: string) => {
 
     // Customizing urls
     const spriteUrl = sprites.versions["generation-i"].yellow["front_default"];
-    const url = `https://pokeapi.co/api/v2/pokemon/${id}/`
+    const url = newAPIUrl.getSinglePokemonUrl(id)
 
     return { id, name, spriteUrl, height, types, abilities, stats, url };
 }
@@ -144,6 +161,23 @@ const buildPokedexList = async (arr: IPokemonData[]) => {
         pokedexList!.innerHTML += pokemonTemplate(pokemon);
     })
     addEventListeners();
+}
+const buildSearchPokedexList = (arr: IPokemonData[]) => {
+    // create paragraph
+    const paragraph = document.createElement("p");
+    paragraph.classList.add("pokedex__search-results-number")
+    // select
+    const searchResultsNumber = document.querySelector(".pokedex__search-results-number")
+    // check if there's a selected paragraph and paint it or not
+    if (searchResultsNumber) {
+        paragraph.textContent = `${arr.length} results founded`
+    } else {
+        paragraph.textContent = `${arr.length} results founded`
+        pokedexArticle.insertBefore(paragraph, pokedexArticle.firstChild); 
+    }
+    // remove show more button
+    buttonShowMoreContainer.remove();
+    buildPokedexList(arr);
 }
 //3. building pokedex on start
 const startPokedex = async () => {
@@ -189,11 +223,16 @@ const pokemonStatsTemplate = (pokemonStats: IPokemonData) => {
             <p>#${id}</p>
             <p>${name}</p>
         </div>
+        <div class="pokemon-height">Height: ${height}</div>
         <div class="pokemon-types">
-            ${buildTypesTemplate(types)}
+            <p>Type:</p>
+            <div class="pokemon-types-row">${buildTypesTemplate(types)}</div>
         </div>
         <div class="pokemon-stats">
-            ${buildStatsTemplate(stats)}
+            <p>Stats:</p>
+            <div>
+                ${buildStatsTemplate(stats)}
+            </div>
         </div>
         <div class="pokemon-abilities">
             ${buildAbilitiesTemplate(abilities)}
@@ -245,37 +284,45 @@ const buildStatsTemplate = (pokemonStatsArr: IPokemonStat[]) => {
 }
 
 // Search form
-const searchPokemon = async (event: Event) => {
+const searchPokemons = async (event: Event) => {
     event.preventDefault();
-    console.log(event.target!)
-    
-    const url: string = "https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0"
 
-    const fetchAllPokemonsList = async (url: string) => {
+    const filterName: string = pokedexSearchInput!.value;
+    const allPokemonUrl: string = `https://pokeapi.co/api/v2/pokemon?limit=${pokemonsMaxNumber}&offset=0`
+
+    const fetchSearchedPokemon = async (url: string) => {
         try {
-            const response = await fetch(url);
+            const response = await fetch(allPokemonUrl);
             const data = await response.json();
-            const allPokemonsList = await data.results;
-            return allPokemonsList;
+            const filteredPokemonPromises = await data.results.filter((pokemon: IPokemonData) => pokemon.name.includes(filterName))
+            const filteredPokemonArr = await filteredPokemonPromises.map((pokemon: IPokemonData) => {
+               return fetchPokemon(pokemon.url);
+            })
+            return await Promise.all(filteredPokemonArr);
         } catch(error) {
             throw error;
         }
     }
-    // Testing
-    const allPokemonsList = await fetchAllPokemonsList(url)
-    const testArr = allPokemonsList.filter(pokemon => pokemon.name.includes("saur"))
-    console.log(testArr)
+    const list = await fetchSearchedPokemon(allPokemonUrl)
+    return buildSearchPokedexList(list);
 }
 
 // Select show stats buttons
 const SelectShowStatsButtons = () => {
     return document.querySelectorAll<HTMLElement>(".js-btn--show-stats");
 }
+// Check search input value
+const inputHasValue = () => {
+    pokedexSearchInput!.value !== '' 
+    ? pokedexSearchSubmit.removeAttribute("disabled")
+    : pokedexSearchSubmit.setAttribute("disabled", "");
+}
 
 // Set addeventlisteners
 const addEventListeners = () => {
-    // Search input
-    pokedexSearchSubmit!.addEventListener("click", searchPokemon)
+    // Search input & submit
+    pokedexSearchInput!.addEventListener("input", inputHasValue);
+    pokedexSearchSubmit!.addEventListener("click", searchPokemons);
     // Show more btn
     buttonShowMore!.addEventListener("click", showMorePokemons);
     // Show stats btn
@@ -286,3 +333,5 @@ const addEventListeners = () => {
 // MAIN
 // Starting app
 window.onload = startPokedex;
+const newAPIUrl = pokedexUrl();
+console.log(newAPIUrl)
