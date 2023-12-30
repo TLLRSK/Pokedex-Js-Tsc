@@ -22,7 +22,6 @@ const pokemonTemplate = (pokemon: IPokemonData) => {
 
 // VARIABLES
 let offset: number = 0;
-let APIurl: string = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=0`;
 let pokemonsArr: IPokemonData[] = [];
 const pokemonsMaxNumber: number = 151;
 
@@ -81,16 +80,24 @@ interface IPokemonStat {
 
 // URL Management
 const pokedexUrl = () => {
+    const maxPokemonNumber = 151;
+    const add = 10;
+    let currenPokemonNumber = add;
     let offset = 0;
-    let url = `https://pokeapi.co/api/v2/pokemon?limit=10&offset=0`;
+    let url = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=0`;
 
     const getUrl = () => {
         return url;
     }
     const updateOffset = () => {
-        offset += 10;
-        url = `https://pokeapi.co/api/v2/pokemon?limit=${pokemonsMaxNumber}&offset=${offset}`;
-        return getUrl();
+        if (currenPokemonNumber + add < maxPokemonNumber) {
+            offset += add;
+            currenPokemonNumber += add;
+            url = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=${offset}`;
+        } else {
+            url = `https://pokeapi.co/api/v2/pokemon?limit=1&offset=${currenPokemonNumber}`;
+            buttonShowMoreContainer.remove();
+        }
     }
     const getTypeUrl = (type: string) => {
         const types: any = {
@@ -104,17 +111,17 @@ const pokedexUrl = () => {
         url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
         return getUrl()
     }
-    return { getUrl, updateOffset, getTypeUrl, getSinglePokemonUrl}
+    return { getUrl, updateOffset, getTypeUrl, getSinglePokemonUrl }
 }
 
 // fetching
 const fetchPokemonsList = async() => {
     try {
         // Fetch pokemons list from url
-        
-        const response: Response = await fetch(APIurl);
+        const url = APIurl.getUrl();
+        const response: Response = await fetch(url);
         const data: IPokemonsListData = await response.json();
-        const pokemonsList: IPokemonsList[] = await data.results;
+        const pokemonsList: IPokemonsList[] = data.results;
 
         // Fetch every listed pokemon's data by it's own url
         const pokemonPromises = pokemonsList.map(async(pokemon: any) => {
@@ -142,15 +149,15 @@ const fetchPokemon = async (pokemonUrl: string) => {
 
     // Customizing urls
     const spriteUrl = sprites.versions["generation-i"].yellow["front_default"];
-    const url = newAPIUrl.getSinglePokemonUrl(id)
+    const url = APIurl.getSinglePokemonUrl(id)
 
     return { id, name, spriteUrl, height, types, abilities, stats, url };
 }
 
 //building pokedex list
 //1. updating pokemon arr
-const addPokemon = async (list: IPokemonData[]) => {
-    list.forEach(pokemon => {
+const addPokemon = async (arr: IPokemonData[]) => {
+    arr.forEach(pokemon => {
         pokemonsArr.push(pokemon);
     });
 }
@@ -191,18 +198,14 @@ const startPokedex = async () => {
 };
 
 // updating pokedex list
-const updateUrl = () => {
-    offset += 10;
-    APIurl =`https://pokeapi.co/api/v2/pokemon?limit=10&offset=${offset}`;
-}
 
 const updatePokedexList = async() => {
-    updateUrl();
     const newPokemonList = await fetchPokemonsList();
     return addPokemon(newPokemonList);
 }
 
 const showMorePokemons = async () => {
+    APIurl.updateOffset();
     await updatePokedexList();
     return buildPokedexList(pokemonsArr);
 }
@@ -333,5 +336,4 @@ const addEventListeners = () => {
 // MAIN
 // Starting app
 window.onload = startPokedex;
-const newAPIUrl = pokedexUrl();
-console.log(newAPIUrl)
+const APIurl = pokedexUrl();
