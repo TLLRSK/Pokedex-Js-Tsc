@@ -6,12 +6,45 @@ const pokedexSearchSubmit = document.querySelector(".js-pokedex__search-submit")
 const buttonShowMoreContainer = document.querySelector(".pokedex__button--show-more") as HTMLElement;
 const buttonShowMore = document.querySelector(".js-btn--show-more") as HTMLElement;
 const pokemonStatsView = document.querySelector(".js-pokedex__pokemon-stats") as HTMLElement;
-
+const pokemonTypeCheckbox = document.querySelectorAll(".js-btn--type-filter");
+const pokemonTypeSubmit = document.querySelector(".js-pokedex__pokemon-type-submit") as HTMLInputElement;
+// Select show stats buttons
+const SelectshowDetailsButton = () => {
+    return document.querySelectorAll<HTMLElement>(".js-btn--show-stats");
+}
+// Pokemon stats template builders
+// types
+const buildTypesTemplate = (typesArr: string[]) => {
+    const singleTypeTemplate = (type: string) => {
+        return `<p class="pokemon-type--${type}">${type}</p>`
+    }
+    return typesArr.map(type => singleTypeTemplate(type)).join('');
+}
+// abilities
+const buildAbilitiesTemplate = (pokemonAbilitiesArr: string[]) => {
+    const singleAbilityTemplate = (ability: string) => {
+        return `<p class="pokemon-ability">${ability}</p>`
+    }
+    return pokemonAbilitiesArr.map(ability => singleAbilityTemplate(ability)).join('');
+}
+// stats
+const buildStatsTemplate = (statsArr: IPokemonStat[]) => {
+    const singleStatTemplate = (stat: IPokemonStat) => {
+        const {name, value} = stat;
+        return `
+            <div class="pokemon-stat">
+                <p class="pokemon-stat--name">${name}</p>
+                <p class="pokemon-stat--value">${value}</p>
+            </div>
+        `
+    }
+    return statsArr.map((stat: any) => singleStatTemplate(stat)).join('')
+}
 // TEMPLATES
-const pokemonTemplate = (pokemon: IPokemonData) => {
+const pokemonCardTemplate = (pokemon: IPokemonData) => {
     return `
         <li data-id=${pokemon.id} class="pokedex__list-item">
-            <img src="${pokemon.spriteUrl}" alt="${pokemon.name}">
+            <img src="${pokemon.sprites}" alt="${pokemon.name}">
             <p class="pokemon-number">#${pokemon.id}</p>
             <p class="pokemon-name">${pokemon.name}</p>
             <div class="pokemon-types">${buildTypesTemplate(pokemon.types)}</div>
@@ -19,209 +52,10 @@ const pokemonTemplate = (pokemon: IPokemonData) => {
         </li>
     `
 }
-
-// VARIABLES
-let offset: number = 0;
-let pokemonsArr: IPokemonData[] = [];
-const pokemonsMaxNumber: number = 151;
-
-// INTERFACES
-interface IPokemonsListData {
-    count: number,
-    next: string | null;
-    previous: string | null;
-    results: {
-        name: string,
-        url: string,
-    }[]
-}
-interface IPokemonsList {
-    name: string,
-    url: string
-}
-interface IPokemonData {
-    id: number;
-    name: string;
-    spriteUrl: IPokemonSpriteUrl,
-    abilities: IPokemonAbility[],
-    height: number,
-    stats: IPokemonStat[],
-    types: IPokemonType[],
-    url: string
-}
-// separated interfaces
-interface IPokemonSpriteUrl {
-    versions: {
-        "generation-i": {
-            yellow: {
-                "front_default": string;
-            };
-        };
-    };
-}
-interface IPokemonType {
-    type: {
-        name: string
-    }
-}
-interface IPokemonAbility {
-    ability: {
-        name: string
-    } 
-}
-interface IPokemonStat {
-    "base_stat": number,
-    stat: {
-        name: string
-    }
-}
-
-// FUNCTIONS
-
-// URL Management
-const pokedexUrl = () => {
-    const maxPokemonNumber = 151;
-    const add = 10;
-    let currenPokemonNumber = add;
-    let offset = 0;
-    let url = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=0`;
-
-    const getUrl = () => {
-        return url;
-    }
-    const updateOffset = () => {
-        if (currenPokemonNumber + add < maxPokemonNumber) {
-            offset += add;
-            currenPokemonNumber += add;
-            url = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=${offset}`;
-        } else {
-            url = `https://pokeapi.co/api/v2/pokemon?limit=1&offset=${currenPokemonNumber}`;
-            buttonShowMoreContainer.remove();
-        }
-    }
-    const getTypeUrl = (type: string) => {
-        const types: any = {
-            normal: 1, fighting: 2, flying: 3, poison: 4, ground: 5,
-            rock: 6, bug: 7, ghost: 8, fire: 10, water: 11,
-            grass: 12, electric: 13, psychic: 14, ice: 15, dragon: 16,
-        }
-        return `https://pokeapi.co/api/v2/type/${types.type}`;
-    }
-    const getSinglePokemonUrl = (id: string) => {
-        url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
-        return getUrl()
-    }
-    return { getUrl, updateOffset, getTypeUrl, getSinglePokemonUrl }
-}
-
-// fetching
-const fetchPokemonsList = async() => {
-    try {
-        // Fetch pokemons list from url
-        const url = APIurl.getUrl();
-        const response: Response = await fetch(url);
-        const data: IPokemonsListData = await response.json();
-        const pokemonsList: IPokemonsList[] = data.results;
-
-        // Fetch every listed pokemon's data by it's own url
-        const pokemonPromises = pokemonsList.map(async(pokemon: any) => {
-            return fetchPokemon(pokemon.url);
-        })
-        
-        // Returning every pokemonData as a promise
-        const listedPokemons = await Promise.all(pokemonPromises)
-        // For TSC: Must RETURN a value
-        return listedPokemons;
-
-    } catch(error) {
-        // For TSC: Must RETURN an error instead of log it into console
-        throw error;
-    }
-}
-
-// Fetching single pokemon
-const fetchPokemon = async (pokemonUrl: string) => {
-    const response = await fetch(pokemonUrl)
-    const data = await response.json();
-
-    // Destructuring pokemonData to extract the info we'll need
-    const {id, name, sprites, height, types, abilities, stats } = data;
-
-    // Customizing urls
-    const spriteUrl = sprites.versions["generation-i"].yellow["front_default"];
-    const url = APIurl.getSinglePokemonUrl(id)
-
-    return { id, name, spriteUrl, height, types, abilities, stats, url };
-}
-
-//building pokedex list
-//1. updating pokemon arr
-const addPokemon = async (arr: IPokemonData[]) => {
-    arr.forEach(pokemon => {
-        pokemonsArr.push(pokemon);
-    });
-}
-//2. building pokedex list html
-const buildPokedexList = async (arr: IPokemonData[]) => {
-    pokedexList!.innerHTML = '';
-    arr.map(async (pokemon) => {
-        pokedexList!.innerHTML += pokemonTemplate(pokemon);
-    })
-    addEventListeners();
-}
-const buildSearchPokedexList = (arr: IPokemonData[]) => {
-    // create paragraph
-    const paragraph = document.createElement("p");
-    paragraph.classList.add("pokedex__search-results-number")
-    // select
-    const searchResultsNumber = document.querySelector(".pokedex__search-results-number")
-    // check if there's a selected paragraph and paint it or not
-    if (searchResultsNumber) {
-        paragraph.textContent = `${arr.length} results founded`
-    } else {
-        paragraph.textContent = `${arr.length} results founded`
-        pokedexArticle.insertBefore(paragraph, pokedexArticle.firstChild); 
-    }
-    // remove show more button
-    buttonShowMoreContainer.remove();
-    buildPokedexList(arr);
-}
-//3. building pokedex on start
-const startPokedex = async () => {
-    try {
-        const pokemonList = await fetchPokemonsList()!;
-        await addPokemon(pokemonList);
-        return await buildPokedexList(pokemonsArr);
-    } catch (error) {
-        throw error;
-    }
-};
-
-// updating pokedex list
-
-const updatePokedexList = async() => {
-    const newPokemonList = await fetchPokemonsList();
-    return addPokemon(newPokemonList);
-}
-
-const showMorePokemons = async () => {
-    APIurl.updateOffset();
-    await updatePokedexList();
-    return buildPokedexList(pokemonsArr);
-}
-
-// Get single pokemon stats
-const fetchPokemonStats = async (event: Event) => {
-    const target = event.target as HTMLElement;
-    const id: string = target.parentElement!.dataset.id!;
-    const url: string = `https://pokeapi.co/api/v2/pokemon/${id}/`
-    return await fetchPokemon(url);
-};
-
-const pokemonStatsTemplate = (pokemonStats: IPokemonData) => {
-    const { id, name, spriteUrl, height, types, abilities, stats } = pokemonStats;
+const pokemonDetailsTemplate = (pokemonStats: IPokemonData) => {
+    const { id, name, sprites, height, types, abilities, stats } = pokemonStats;
     return `
-        <img src="${spriteUrl}" alt="${name}">
+        <img src="${sprites}" alt="${name}">
         <div class="pokemon-id">
             <p>#${id}</p>
             <p>${name}</p>
@@ -242,51 +76,212 @@ const pokemonStatsTemplate = (pokemonStats: IPokemonData) => {
         </div>
     `
 }
+// VARIABLES
+let offset: number = 0;
+let pokedexArr: IPokemonData[] = [];
+const pokemonsMaxNumber: number = 151;
+
+// INTERFACES
+interface IPokemonsListData {
+    count: number,
+    next: string | null;
+    previous: string | null;
+    results: {
+        name: string,
+        url: string,
+    }[]
+}
+interface IPokemonsList {
+    name: string,
+    url: string
+}
+interface IPokemonData {
+    id: number;
+    name: string;
+    sprites: IPokemonsprites,
+    abilities: string[],
+    height: number,
+    stats: IPokemonStat[],
+    types: string[],
+    url: string
+}
+// separated interfaces
+interface IPokemonsprites {
+    versions: {
+        "generation-i": {
+            yellow: {
+                "front_default": string;
+            };
+        };
+    };
+}
+interface IPokemonStat {
+    name: string,
+    value: number
+}
+// FUNCTIONS
+// URL Management
+const pokedexUrl = () => {
+    const maxPokemonNumber: number = 151;
+    const add: number = 12;
+    let currenPokemonNumber: number = add;
+    let offset: number = 0;
+    let url: string = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=0`;
+
+    const getUrl = () => {
+        return url;
+    }
+    const resetUrl = () => {
+        url = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=0`;
+        return getUrl();
+    }
+    const getSinglePokemonUrl = (id: string) => {
+        url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
+        return getUrl()
+    }
+    const getAllPokemonUrl = () => {
+        url = `https://pokeapi.co/api/v2/pokemon?limit=${maxPokemonNumber}&offset=0`;
+        return getUrl()
+    }
+    const updateOffset = () => {
+        if (currenPokemonNumber + add < maxPokemonNumber) {
+            offset += add;
+            currenPokemonNumber += add;
+            url = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=${offset}`;
+        } else {
+            url = `https://pokeapi.co/api/v2/pokemon?limit=1&offset=${currenPokemonNumber}`;
+            buttonShowMoreContainer.remove();
+        }
+    }
+    return { getUrl, resetUrl, updateOffset, getSinglePokemonUrl, getAllPokemonUrl }
+}
+
+// fetching
+const fetchPokemonsList = async(url: string) => {
+    try {
+        // Fetch pokemons list from url
+        // const url = APIurl.getUrl();
+        const response: Response = await fetch(url);
+        const data: IPokemonsListData = await response.json();
+        const pokemonsList: IPokemonsList[] = data.results;
+        // Fetch every listed pokemon's data by it's own url
+        const pokemonPromises = pokemonsList.map(async(pokemon: any) => {
+            return fetchPokemon(pokemon.url);
+        })
+        // Returning every pokemonData as a promise
+        const listedPokemons = await Promise.all(pokemonPromises)
+        // For TSC: Must RETURN a value
+        return listedPokemons;
+
+    } catch(error) {
+        // For TSC: Must RETURN an error instead of log it into console
+        throw error;
+    }
+}
+
+// Fetching single pokemon
+const fetchPokemon = async (pokemonUrl: string) => {
+    const response = await fetch(pokemonUrl)
+    const data = await response.json();
+
+    // Destructuring pokemonData to extract the info we'll need
+    let {id, name, sprites, height, types, abilities, stats } = data;
+
+    // Customizing properties
+    // sprites
+    sprites = sprites.versions["generation-i"].yellow["front_default"];
+    // types
+    types = await Promise.all(types.map((prop: any) => prop.type.name))
+    // abilities
+    abilities = await Promise.all(abilities.map((prop: any) => prop.ability.name))
+    //stats
+    stats = await Promise.all(stats.map((prop: any) => ({name: prop.stat.name, value: prop.base_stat})))
+    //url
+    const url = APIurl.getSinglePokemonUrl(id)
+    // result
+    return { id, name, sprites, height, types, abilities, stats, url };
+}
+
+//building pokedex list
+// Adding pokemons to pokedexArr
+const addPokemon = async (arr: IPokemonData[]) => {
+    pokedexArr = [];
+    
+    arr.forEach(pokemon => {
+        pokedexArr.push(pokemon);
+    });
+    console.log(pokedexArr)
+}
+
+// Building pokedex list html
+const buildPokemonsList = async (arr: IPokemonData[]) => {
+    pokedexList.innerHTML = ``;
+    arr.map(async (pokemon) => {
+        pokedexList!.innerHTML += pokemonCardTemplate(pokemon);
+    })
+    updateShowDetailsAddEventListeners();
+}
+const buildSearchPokemonsList = (arr: IPokemonData[]) => {
+    // create paragraph
+    const paragraph = document.createElement("p");
+    paragraph.classList.add("pokedex__search-results-number")
+    // select
+    const searchResultsNumber = document.querySelector(".pokedex__search-results-number")
+    // check if there's a selected paragraph and paint it or not
+    if (searchResultsNumber) {
+        paragraph.textContent = `${arr.length} results founded`
+    } else {
+        paragraph.textContent = `${arr.length} results founded`
+        pokedexArticle.insertBefore(paragraph, pokedexArticle.firstChild); 
+    }
+    // remove show more button
+    buttonShowMoreContainer.remove();
+    buildPokemonsList(arr);
+}
+const buildTypePokemonsList = (arr: string[]) => {
+    return '';
+}
+
+// Building pokedex on start
+const startPokedex = async () => {
+    try {
+        const url = APIurl.resetUrl();
+        const pokemonList = await fetchPokemonsList(url)!;
+        addEventListeners();
+        await addPokemon(pokemonList);
+        return await buildPokemonsList(pokedexArr);
+    } catch (error) {
+        throw error;
+    }
+};
+
+// updating pokedex list
+const updatePokedexList = async() => {
+    const url = APIurl.getUrl()
+    const newPokemonList = await fetchPokemonsList(url);
+    return addPokemon(newPokemonList);
+}
+
+const showMorePokemons = async () => {
+    APIurl.updateOffset();
+    await updatePokedexList();
+    return buildPokemonsList(pokedexArr);
+}
+
+// Get single pokemon stats
+const fetchPokemonStats = async (event: Event) => {
+    const target = event.target as HTMLElement;
+    const id: string = target.parentElement!.dataset.id!;
+    const url: string = `https://pokeapi.co/api/v2/pokemon/${id}/`
+    return await fetchPokemon(url);
+};
+
 const buildPokemonStats = async (event: Event) => {
     pokemonStatsView!.innerHTML = "";
     const pokemonStats = await fetchPokemonStats(event)
-    return pokemonStatsView!.innerHTML += await pokemonStatsTemplate(pokemonStats)
+    return pokemonStatsView!.innerHTML += await pokemonDetailsTemplate(pokemonStats)
 }
-
-// Pokemon stats template builders
-// types
-const buildTypesTemplate = (pokemonTypesArr: IPokemonType[]) => {
-    const singleTypeTemplate = (typeObj: IPokemonType) => {
-        const typeName = typeObj.type.name;
-        return `<p class="pokemon-type--${typeName}">${typeName}</p>`
-    }
-    return pokemonTypesArr
-        .map(type => singleTypeTemplate(type))
-        .join('');
-}
-// abilities
-const buildAbilitiesTemplate = (pokemonAbilitiesArr: IPokemonAbility[]) => {
-    const singleAbilityTemplate = (abilityOjb: IPokemonAbility) => {
-        const abilityName = abilityOjb.ability.name;
-        return `<p class="pokemon-ability">${abilityName}</p>`
-    }
-    return pokemonAbilitiesArr
-        .map(ability => singleAbilityTemplate(ability))
-        .join('');
-}
-// stats
-const buildStatsTemplate = (pokemonStatsArr: IPokemonStat[]) => {
-    const singleStatTemplate = (statOjb: IPokemonStat) => {
-        const statName = statOjb.stat.name;
-        const statValue = statOjb.base_stat;
-        return `
-            <div class="pokemon-stat">
-                <p class="pokemon-stat--name">${statName}</p>
-                <p class="pokemon-stat--value">${statValue}</p>
-            </div>
-        `
-    }
-    return pokemonStatsArr
-        .map(stat => singleStatTemplate(stat))
-        .join('')
-}
-
-// Search form
+// Searching pokemons
 const searchPokemons = async (event: Event) => {
     event.preventDefault();
 
@@ -307,18 +302,45 @@ const searchPokemons = async (event: Event) => {
         }
     }
     const list = await fetchSearchedPokemon(allPokemonUrl)
-    return buildSearchPokedexList(list);
+    return buildSearchPokemonsList(list);
 }
 
-// Select show stats buttons
-const SelectShowStatsButtons = () => {
-    return document.querySelectorAll<HTMLElement>(".js-btn--show-stats");
-}
 // Check search input value
 const inputHasValue = () => {
     pokedexSearchInput!.value !== '' 
     ? pokedexSearchSubmit.removeAttribute("disabled")
     : pokedexSearchSubmit.setAttribute("disabled", "");
+}
+// Add all pokemon to pokedexarr
+let typesArr: string[] = [];
+const addAllPokemon = async () => {
+    const url = APIurl.getAllPokemonUrl();
+    return await fetchPokemonsList(url);
+}
+
+// POKEMON TYPE FILTER
+// Updating typesarr
+const updateTypesArr = (target: HTMLInputElement) => {
+    if (!typesArr.includes(target.name)) {
+        typesArr.push(target.name)
+    } else {
+        typesArr.splice(typesArr.indexOf(target.name),1)
+    }
+    console.log(typesArr)
+}
+// Submitting typesarr
+const submitTypesArr = (e: Event) => {
+    e.preventDefault();
+    filterPokedexArr(typesArr);
+}
+// Filtering new arr
+const filterPokedexArr = async (typesArr: string[]) => {
+    const url = await APIurl.getAllPokemonUrl()
+    const pokedexArr = await fetchPokemonsList(url);
+    const filteredArr = pokedexArr.filter(pokemon => pokemon.types.some((type: string) => typesArr.includes(type)))
+    typesArr.length > 0
+        ? buildPokemonsList(filteredArr)
+        : startPokedex();
 }
 
 // Set addeventlisteners
@@ -326,12 +348,19 @@ const addEventListeners = () => {
     // Search input & submit
     pokedexSearchInput!.addEventListener("input", inputHasValue);
     pokedexSearchSubmit!.addEventListener("click", searchPokemons);
+    // Pokemon type checkbox
+    pokemonTypeCheckbox!.forEach(e => {e.addEventListener("click", (e: Event) => updateTypesArr(e.target as HTMLInputElement))})
+    // Pokemon type submit
+    pokemonTypeSubmit!.addEventListener("click", submitTypesArr);
     // Show more btn
     buttonShowMore!.addEventListener("click", showMorePokemons);
     // Show stats btn
-    const showStatsButtons = SelectShowStatsButtons();
-    showStatsButtons.forEach(el => {el.addEventListener("click", buildPokemonStats)});
 };
+
+const updateShowDetailsAddEventListeners = () => {
+    const showDetailsButton = SelectshowDetailsButton();
+    showDetailsButton.forEach(el => {el.addEventListener("click", buildPokemonStats)});
+}
 
 // MAIN
 // Starting app

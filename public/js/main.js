@@ -16,11 +16,45 @@ const pokedexSearchSubmit = document.querySelector(".js-pokedex__search-submit")
 const buttonShowMoreContainer = document.querySelector(".pokedex__button--show-more");
 const buttonShowMore = document.querySelector(".js-btn--show-more");
 const pokemonStatsView = document.querySelector(".js-pokedex__pokemon-stats");
+const pokemonTypeCheckbox = document.querySelectorAll(".js-btn--type-filter");
+const pokemonTypeSubmit = document.querySelector(".js-pokedex__pokemon-type-submit");
+// Select show stats buttons
+const SelectshowDetailsButton = () => {
+    return document.querySelectorAll(".js-btn--show-stats");
+};
+// Pokemon stats template builders
+// types
+const buildTypesTemplate = (typesArr) => {
+    const singleTypeTemplate = (type) => {
+        return `<p class="pokemon-type--${type}">${type}</p>`;
+    };
+    return typesArr.map(type => singleTypeTemplate(type)).join('');
+};
+// abilities
+const buildAbilitiesTemplate = (pokemonAbilitiesArr) => {
+    const singleAbilityTemplate = (ability) => {
+        return `<p class="pokemon-ability">${ability}</p>`;
+    };
+    return pokemonAbilitiesArr.map(ability => singleAbilityTemplate(ability)).join('');
+};
+// stats
+const buildStatsTemplate = (statsArr) => {
+    const singleStatTemplate = (stat) => {
+        const { name, value } = stat;
+        return `
+            <div class="pokemon-stat">
+                <p class="pokemon-stat--name">${name}</p>
+                <p class="pokemon-stat--value">${value}</p>
+            </div>
+        `;
+    };
+    return statsArr.map((stat) => singleStatTemplate(stat)).join('');
+};
 // TEMPLATES
-const pokemonTemplate = (pokemon) => {
+const pokemonCardTemplate = (pokemon) => {
     return `
         <li data-id=${pokemon.id} class="pokedex__list-item">
-            <img src="${pokemon.spriteUrl}" alt="${pokemon.name}">
+            <img src="${pokemon.sprites}" alt="${pokemon.name}">
             <p class="pokemon-number">#${pokemon.id}</p>
             <p class="pokemon-name">${pokemon.name}</p>
             <div class="pokemon-types">${buildTypesTemplate(pokemon.types)}</div>
@@ -28,20 +62,56 @@ const pokemonTemplate = (pokemon) => {
         </li>
     `;
 };
+const pokemonDetailsTemplate = (pokemonStats) => {
+    const { id, name, sprites, height, types, abilities, stats } = pokemonStats;
+    return `
+        <img src="${sprites}" alt="${name}">
+        <div class="pokemon-id">
+            <p>#${id}</p>
+            <p>${name}</p>
+        </div>
+        <div class="pokemon-height">Height: ${height}</div>
+        <div class="pokemon-types">
+            <p>Type:</p>
+            <div class="pokemon-types-row">${buildTypesTemplate(types)}</div>
+        </div>
+        <div class="pokemon-stats">
+            <p>Stats:</p>
+            <div>
+                ${buildStatsTemplate(stats)}
+            </div>
+        </div>
+        <div class="pokemon-abilities">
+            ${buildAbilitiesTemplate(abilities)}
+        </div>
+    `;
+};
 // VARIABLES
 let offset = 0;
-let pokemonsArr = [];
+let pokedexArr = [];
 const pokemonsMaxNumber = 151;
 // FUNCTIONS
 // URL Management
 const pokedexUrl = () => {
     const maxPokemonNumber = 151;
-    const add = 10;
+    const add = 12;
     let currenPokemonNumber = add;
     let offset = 0;
     let url = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=0`;
     const getUrl = () => {
         return url;
+    };
+    const resetUrl = () => {
+        url = `https://pokeapi.co/api/v2/pokemon?limit=${add}&offset=0`;
+        return getUrl();
+    };
+    const getSinglePokemonUrl = (id) => {
+        url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
+        return getUrl();
+    };
+    const getAllPokemonUrl = () => {
+        url = `https://pokeapi.co/api/v2/pokemon?limit=${maxPokemonNumber}&offset=0`;
+        return getUrl();
     };
     const updateOffset = () => {
         if (currenPokemonNumber + add < maxPokemonNumber) {
@@ -54,25 +124,13 @@ const pokedexUrl = () => {
             buttonShowMoreContainer.remove();
         }
     };
-    const getTypeUrl = (type) => {
-        const types = {
-            normal: 1, fighting: 2, flying: 3, poison: 4, ground: 5,
-            rock: 6, bug: 7, ghost: 8, fire: 10, water: 11,
-            grass: 12, electric: 13, psychic: 14, ice: 15, dragon: 16,
-        };
-        return `https://pokeapi.co/api/v2/type/${types.type}`;
-    };
-    const getSinglePokemonUrl = (id) => {
-        url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
-        return getUrl();
-    };
-    return { getUrl, updateOffset, getTypeUrl, getSinglePokemonUrl };
+    return { getUrl, resetUrl, updateOffset, getSinglePokemonUrl, getAllPokemonUrl };
 };
 // fetching
-const fetchPokemonsList = () => __awaiter(void 0, void 0, void 0, function* () {
+const fetchPokemonsList = (url) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Fetch pokemons list from url
-        const url = APIurl.getUrl();
+        // const url = APIurl.getUrl();
         const response = yield fetch(url);
         const data = yield response.json();
         const pokemonsList = data.results;
@@ -95,28 +153,39 @@ const fetchPokemon = (pokemonUrl) => __awaiter(void 0, void 0, void 0, function*
     const response = yield fetch(pokemonUrl);
     const data = yield response.json();
     // Destructuring pokemonData to extract the info we'll need
-    const { id, name, sprites, height, types, abilities, stats } = data;
-    // Customizing urls
-    const spriteUrl = sprites.versions["generation-i"].yellow["front_default"];
+    let { id, name, sprites, height, types, abilities, stats } = data;
+    // Customizing properties
+    // sprites
+    sprites = sprites.versions["generation-i"].yellow["front_default"];
+    // types
+    types = yield Promise.all(types.map((prop) => prop.type.name));
+    // abilities
+    abilities = yield Promise.all(abilities.map((prop) => prop.ability.name));
+    //stats
+    stats = yield Promise.all(stats.map((prop) => ({ name: prop.stat.name, value: prop.base_stat })));
+    //url
     const url = APIurl.getSinglePokemonUrl(id);
-    return { id, name, spriteUrl, height, types, abilities, stats, url };
+    // result
+    return { id, name, sprites, height, types, abilities, stats, url };
 });
 //building pokedex list
-//1. updating pokemon arr
+// Adding pokemons to pokedexArr
 const addPokemon = (arr) => __awaiter(void 0, void 0, void 0, function* () {
+    pokedexArr = [];
     arr.forEach(pokemon => {
-        pokemonsArr.push(pokemon);
+        pokedexArr.push(pokemon);
     });
+    console.log(pokedexArr);
 });
-//2. building pokedex list html
-const buildPokedexList = (arr) => __awaiter(void 0, void 0, void 0, function* () {
-    pokedexList.innerHTML = '';
+// Building pokedex list html
+const buildPokemonsList = (arr) => __awaiter(void 0, void 0, void 0, function* () {
+    pokedexList.innerHTML = ``;
     arr.map((pokemon) => __awaiter(void 0, void 0, void 0, function* () {
-        pokedexList.innerHTML += pokemonTemplate(pokemon);
+        pokedexList.innerHTML += pokemonCardTemplate(pokemon);
     }));
-    addEventListeners();
+    updateShowDetailsAddEventListeners();
 });
-const buildSearchPokedexList = (arr) => {
+const buildSearchPokemonsList = (arr) => {
     // create paragraph
     const paragraph = document.createElement("p");
     paragraph.classList.add("pokedex__search-results-number");
@@ -132,14 +201,19 @@ const buildSearchPokedexList = (arr) => {
     }
     // remove show more button
     buttonShowMoreContainer.remove();
-    buildPokedexList(arr);
+    buildPokemonsList(arr);
 };
-//3. building pokedex on start
+const buildTypePokemonsList = (arr) => {
+    return '';
+};
+// Building pokedex on start
 const startPokedex = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const pokemonList = yield fetchPokemonsList();
+        const url = APIurl.resetUrl();
+        const pokemonList = yield fetchPokemonsList(url);
+        addEventListeners();
         yield addPokemon(pokemonList);
-        return yield buildPokedexList(pokemonsArr);
+        return yield buildPokemonsList(pokedexArr);
     }
     catch (error) {
         throw error;
@@ -147,13 +221,14 @@ const startPokedex = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 // updating pokedex list
 const updatePokedexList = () => __awaiter(void 0, void 0, void 0, function* () {
-    const newPokemonList = yield fetchPokemonsList();
+    const url = APIurl.getUrl();
+    const newPokemonList = yield fetchPokemonsList(url);
     return addPokemon(newPokemonList);
 });
 const showMorePokemons = () => __awaiter(void 0, void 0, void 0, function* () {
     APIurl.updateOffset();
     yield updatePokedexList();
-    return buildPokedexList(pokemonsArr);
+    return buildPokemonsList(pokedexArr);
 });
 // Get single pokemon stats
 const fetchPokemonStats = (event) => __awaiter(void 0, void 0, void 0, function* () {
@@ -162,73 +237,12 @@ const fetchPokemonStats = (event) => __awaiter(void 0, void 0, void 0, function*
     const url = `https://pokeapi.co/api/v2/pokemon/${id}/`;
     return yield fetchPokemon(url);
 });
-const pokemonStatsTemplate = (pokemonStats) => {
-    const { id, name, spriteUrl, height, types, abilities, stats } = pokemonStats;
-    return `
-        <img src="${spriteUrl}" alt="${name}">
-        <div class="pokemon-id">
-            <p>#${id}</p>
-            <p>${name}</p>
-        </div>
-        <div class="pokemon-height">Height: ${height}</div>
-        <div class="pokemon-types">
-            <p>Type:</p>
-            <div class="pokemon-types-row">${buildTypesTemplate(types)}</div>
-        </div>
-        <div class="pokemon-stats">
-            <p>Stats:</p>
-            <div>
-                ${buildStatsTemplate(stats)}
-            </div>
-        </div>
-        <div class="pokemon-abilities">
-            ${buildAbilitiesTemplate(abilities)}
-        </div>
-    `;
-};
 const buildPokemonStats = (event) => __awaiter(void 0, void 0, void 0, function* () {
     pokemonStatsView.innerHTML = "";
     const pokemonStats = yield fetchPokemonStats(event);
-    return pokemonStatsView.innerHTML += yield pokemonStatsTemplate(pokemonStats);
+    return pokemonStatsView.innerHTML += yield pokemonDetailsTemplate(pokemonStats);
 });
-// Pokemon stats template builders
-// types
-const buildTypesTemplate = (pokemonTypesArr) => {
-    const singleTypeTemplate = (typeObj) => {
-        const typeName = typeObj.type.name;
-        return `<p class="pokemon-type--${typeName}">${typeName}</p>`;
-    };
-    return pokemonTypesArr
-        .map(type => singleTypeTemplate(type))
-        .join('');
-};
-// abilities
-const buildAbilitiesTemplate = (pokemonAbilitiesArr) => {
-    const singleAbilityTemplate = (abilityOjb) => {
-        const abilityName = abilityOjb.ability.name;
-        return `<p class="pokemon-ability">${abilityName}</p>`;
-    };
-    return pokemonAbilitiesArr
-        .map(ability => singleAbilityTemplate(ability))
-        .join('');
-};
-// stats
-const buildStatsTemplate = (pokemonStatsArr) => {
-    const singleStatTemplate = (statOjb) => {
-        const statName = statOjb.stat.name;
-        const statValue = statOjb.base_stat;
-        return `
-            <div class="pokemon-stat">
-                <p class="pokemon-stat--name">${statName}</p>
-                <p class="pokemon-stat--value">${statValue}</p>
-            </div>
-        `;
-    };
-    return pokemonStatsArr
-        .map(stat => singleStatTemplate(stat))
-        .join('');
-};
-// Search form
+// Searching pokemons
 const searchPokemons = (event) => __awaiter(void 0, void 0, void 0, function* () {
     event.preventDefault();
     const filterName = pokedexSearchInput.value;
@@ -248,28 +262,61 @@ const searchPokemons = (event) => __awaiter(void 0, void 0, void 0, function* ()
         }
     });
     const list = yield fetchSearchedPokemon(allPokemonUrl);
-    return buildSearchPokedexList(list);
+    return buildSearchPokemonsList(list);
 });
-// Select show stats buttons
-const SelectShowStatsButtons = () => {
-    return document.querySelectorAll(".js-btn--show-stats");
-};
 // Check search input value
 const inputHasValue = () => {
     pokedexSearchInput.value !== ''
         ? pokedexSearchSubmit.removeAttribute("disabled")
         : pokedexSearchSubmit.setAttribute("disabled", "");
 };
+// Add all pokemon to pokedexarr
+let typesArr = [];
+const addAllPokemon = () => __awaiter(void 0, void 0, void 0, function* () {
+    const url = APIurl.getAllPokemonUrl();
+    return yield fetchPokemonsList(url);
+});
+// POKEMON TYPE FILTER
+// Updating typesarr
+const updateTypesArr = (target) => {
+    if (!typesArr.includes(target.name)) {
+        typesArr.push(target.name);
+    }
+    else {
+        typesArr.splice(typesArr.indexOf(target.name), 1);
+    }
+    console.log(typesArr);
+};
+// Submitting typesarr
+const submitTypesArr = (e) => {
+    e.preventDefault();
+    filterPokedexArr(typesArr);
+};
+// Filtering new arr
+const filterPokedexArr = (typesArr) => __awaiter(void 0, void 0, void 0, function* () {
+    const url = yield APIurl.getAllPokemonUrl();
+    const pokedexArr = yield fetchPokemonsList(url);
+    const filteredArr = pokedexArr.filter(pokemon => pokemon.types.some((type) => typesArr.includes(type)));
+    typesArr.length > 0
+        ? buildPokemonsList(filteredArr)
+        : startPokedex();
+});
 // Set addeventlisteners
 const addEventListeners = () => {
     // Search input & submit
     pokedexSearchInput.addEventListener("input", inputHasValue);
     pokedexSearchSubmit.addEventListener("click", searchPokemons);
+    // Pokemon type checkbox
+    pokemonTypeCheckbox.forEach(e => { e.addEventListener("click", (e) => updateTypesArr(e.target)); });
+    // Pokemon type submit
+    pokemonTypeSubmit.addEventListener("click", submitTypesArr);
     // Show more btn
     buttonShowMore.addEventListener("click", showMorePokemons);
     // Show stats btn
-    const showStatsButtons = SelectShowStatsButtons();
-    showStatsButtons.forEach(el => { el.addEventListener("click", buildPokemonStats); });
+};
+const updateShowDetailsAddEventListeners = () => {
+    const showDetailsButton = SelectshowDetailsButton();
+    showDetailsButton.forEach(el => { el.addEventListener("click", buildPokemonStats); });
 };
 // MAIN
 // Starting app
