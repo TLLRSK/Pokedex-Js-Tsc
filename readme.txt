@@ -15,5 +15,5 @@
 - Improve url managing ✔
 - Fix max number of available pokemons ✔
 - Fix no filter after filtering case ✔
-- Remove search results when we user isn't searching
+- Remove search results + show more button missing when user isn't searching
 - Add page system for all cases
