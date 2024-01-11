@@ -33,8 +33,10 @@ const Pokedex = () => {
     let pokedexArr = [];
     let tempArr = [];
     let typesArr = [];
+    let loadingList = false;
     // HTML
     const header = document.querySelector(".js-header");
+    const pokedexLoading = document.querySelector(".js-pokedex__loading");
     const pokedexBlank = document.querySelector(".js-pokedex__blank");
     const pokedexResults = document.querySelector(".js-pokedex__results");
     const pokedexList = document.querySelector(".js-pokedex__list");
@@ -79,7 +81,7 @@ const Pokedex = () => {
     // TEMPLATES
     const pokemonCardTemplate = (pokemon) => {
         return `
-        <li data-id=${pokemon.id} class="pokedex__grid-item">
+        <li data-id=${pokemon.id} class="pokedex__grid-item hover-shadow">
             <button class="pokemon-card js-btn--show-details">
                 <div class="pokemon-sprite">
                     <img src="${pokemon.sprites}" alt="${pokemon.name}">
@@ -92,10 +94,10 @@ const Pokedex = () => {
     `;
     };
     const pokemonDetailsTemplate = (pokemonStats) => {
-        const { id, name, sprites, height, types, abilities, stats } = pokemonStats;
+        const { id, name, sprites, types, abilities, stats } = pokemonStats;
         return `
         <div class="pokemon-close-btn">
-            <button class="btn--close-pokemon-details js-btn--close-pokemon-details">close x</button>
+            <button class="btn--close-pokemon-details js-btn--close-pokemon-details hover-shadow">close x</button>
         </div>
         <div class="pokemon-main-info">
             <div class="pokemon-sprite">
@@ -106,7 +108,6 @@ const Pokedex = () => {
             <div class="pokemon-types">
                 ${buildTypesTemplate(types)}
             </div>
-            <div class="pokemon-height"><p>Height: ${height}</p></div>
         </div>
        
         <did class="pokemon-details-info">
@@ -150,6 +151,7 @@ const Pokedex = () => {
             const data = yield response.json();
             const pokemonsList = data.results;
             // Fetch every listed pokemon's data by it's own url
+            showLoadingPage();
             const pokemonPromises = pokemonsList.map((pokemon) => __awaiter(void 0, void 0, void 0, function* () {
                 return fetchSinglePokemon(pokemon.url);
             }));
@@ -168,7 +170,7 @@ const Pokedex = () => {
         const response = yield fetch(pokemonUrl);
         const data = yield response.json();
         // Destructuring pokemonData to extract the info we'll need
-        let { id, name, sprites, height, types, abilities, stats } = data;
+        let { id, name, sprites, types, abilities, stats } = data;
         // Customizing properties
         // Sprites
         sprites = sprites.versions["generation-i"].yellow["front_default"];
@@ -181,10 +183,11 @@ const Pokedex = () => {
         // Url
         const url = APIurl.getSinglePokemonUrl(id);
         // Result
-        return { id, name, sprites, height, types, abilities, stats, url };
+        return { id, name, sprites, types, abilities, stats, url };
     });
     // Build pokedex list with the first itemsPerPage pokemons
     const buildPokedexList = (arr) => __awaiter(void 0, void 0, void 0, function* () {
+        closeLoadingPage();
         pokedexResults.innerHTML = `Showing ${tempArr.length} results`;
         const slicedArr = getNextPokemons(arr);
         slicedArr.map((pokemon) => {
@@ -265,8 +268,8 @@ const Pokedex = () => {
     };
     // Show Filter list
     const showFilterList = () => {
-        if (headerFilter.classList.contains("hidden")) {
-            headerFilter.classList.remove("hidden");
+        if (headerFilter.classList.contains("hidden--filter")) {
+            headerFilter.classList.remove("hidden--filter");
             showBlank(0);
         }
         else {
@@ -275,7 +278,7 @@ const Pokedex = () => {
     };
     // Close Filter list
     const closeFilterList = () => {
-        headerFilter.classList.add("hidden");
+        headerFilter.classList.add("hidden--filter");
         setTimeout(() => {
             closeBlank();
         }, 10);
@@ -296,6 +299,17 @@ const Pokedex = () => {
     };
     const closeBlank = () => {
         pokedexBlank.classList.add("hidden");
+    };
+    // LOADING PAGE
+    const showLoadingPage = () => {
+        loadingList = true;
+        pokedexLoading.style.display = "block";
+    };
+    const closeLoadingPage = () => {
+        if (loadingList) {
+            pokedexLoading.style.display = "none";
+            loadingList = false;
+        }
     };
     // ADDEVENTLISTENERS
     // Select show single pokemon stats buttons
@@ -319,6 +333,7 @@ const Pokedex = () => {
         buttonShowMore.addEventListener("click", () => buildPokedexList(tempArr));
         // Close pokemon details
         closePokemonDetailsCardBtn.addEventListener("click", closePokemonDetails);
+        pokedexBlank.addEventListener("click", closePokemonDetails);
     };
     const updateShowDetailsAddEventListeners = () => {
         const showPokemonDetailsButton = SelectshowDetailsButton();
