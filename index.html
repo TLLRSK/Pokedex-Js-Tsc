@@ -7,104 +7,113 @@
     <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-    <header class="pokedex__header">
-        <h1><a href="./index.html">Pokédex</a></h1>
-        <form id="pokedex__search-form">
-            <input type="text" id="pokedex__search" class="pokedex__search-input js-pokedex__search-input" placeholder="Search pokemon">
-            <button class="brn pokedex__search-submit js-pokedex__search-submit" disabled="true">Search</button>
-        </form>
+    <header class="header js-header">
+
+        <div class="header__topbar">
+            <a href="./index.html" class="header__topbar-title"><h1>pkdx</h1></a>
+
+            <div class="header__topbar-tools">
+                <form id="header__search" class="header__search">
+                    <input type="text" id="header__search-input" class="header__search-input js-pokedex__search-input" placeholder="Search pokemon">
+                    <input type="submit" class="header__search-submit js-pokedex__search-submit" disabled="true" value="search"/>
+                </form>
+                <button class="btn--show-filter-list js-header__show-filter-btn">Filter</button>
+            </div>
+        </div>
+
+        <div class="header__filter js-header__filter hidden">
+            <form id="header__filter" class=" types__grid" action="filter-types">
+                <label for="type-filter--normal" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--normal" class="btn--type-filter js-btn--type-filter" name="normal">                    <span>normal</span>
+                </label>
+                    
+                <label for="type-filter--fighting" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--fighting" class="btn--type-filter js-btn--type-filter" name="fighting">                    <span>fighting</span>
+                </label>
+                    
+                <label for="type-filter--flying" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--flying" class="btn--type-filter js-btn--type-filter" name="flying">                    <span>flying</span>
+                </label>
+                    
+                <label for="type-filter--poison" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--poison" class="btn--type-filter js-btn--type-filter" name="poison">                    <span>poison</span>
+                </label>
+                    
+                <label for="type-filter--ground" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--ground" class="btn--type-filter js-btn--type-filter" name="ground">                    <span>ground</span>
+                </label>
+                    
+                <label for="type-filter--rock" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--rock" class="btn--type-filter js-btn--type-filter" name="rock">                    <span>rock</span>
+                </label>
+                    
+                <label for="type-filter--bug" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--bug" class="btn--type-filter js-btn--type-filter" name="bug">                    <span>bug</span>
+                </label>
+                    
+                <label for="type-filter--ghost" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--ghost" class="btn--type-filter js-btn--type-filter" name="ghost">                    <span>ghost</span>
+                </label>
+                    
+                <label for="type-filter--fire" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--fire" class="btn--type-filter js-btn--type-filter" name="fire">                    <span>fire</span>
+                </label>
+                    
+                <label for="type-filter--water" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--water" class="btn--type-filter js-btn--type-filter" name="water">                    <span>water</span>
+                </label>
+                    
+                <label for="type-filter--grass" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--grass" class="btn--type-filter js-btn--type-filter" name="grass">                    <span>grass</span>
+                </label>
+                    
+                <label for="type-filter--electric" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--electric" class="btn--type-filter js-btn--type-filter" name="electric">                    <span>electric</span>
+                </label>
+                    
+                <label for="type-filter--psychic" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--psychic" class="btn--type-filter js-btn--type-filter" name="psychic">                    <span>psychic</span>
+                </label>
+                    
+                <label for="type-filter--ice" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--ice" class="btn--type-filter js-btn--type-filter" name="ice">                    <span>ice</span>
+                </label>
+                    
+                <label for="type-filter--dragon" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--dragon" class="btn--type-filter js-btn--type-filter" name="dragon">                    <span>dragon</span>
+                </label>
+    
+                <label for="type-filter--fairy" class="types__grid-item">
+                    <input type="checkbox" id="type-filter--fairy" class="btn--type-filter js-btn--type-filter" name="fairy">                    <span>fairy</span>
+                </label>
+            </form>
+            
+            <div class="header__filter-buttons">
+                <button class="btn--reset-filter js-types__reset-filter">Reset Filter</button>
+                <button class="btn--apply-filter js-pokedex__pokemon-type-submit">Apply filter</button>
+            </div>
+        </div>
+        
+        
+
     </header>
 
-    <main class="pokedex__main">
-        <article class="pokedex__article js-pokedex__article">
-            <h3 class="pokedex__results js-pokedex__results"></h3>
-            <ul class="pokedex__list js-pokedex__list"></ul>
-            <button class="btn--show-next js-btn--show-next">MORE</button>
-        </article>
-        <aside>
-            <article class="pokedex__pokemon-stats js-pokedex__pokemon-stats"></article>
-            <form id="pokedex__type-filter" class="pokedex__pokemon-type-filter pokedex__pokemon-type-filter" action="filter-types">
-                <label for="type-filter--normal">
-                    <input type="checkbox" id="type-filter--normal" class="btn--type-filter js-btn--type-filter" name="normal">
-                    <span>normal</span>
-                </label>
-                    
-                <label for="type-filter--fighting">
-                    <input type="checkbox" id="type-filter--fighting" class="btn--type-filter js-btn--type-filter" name="fighting">
-                    <span>fighting</span>
-                </label>
-                    
-                <label for="type-filter--flying">
-                    <input type="checkbox" id="type-filter--flying" class="btn--type-filter js-btn--type-filter" name="flying">
-                    <span>flying</span>
-                </label>
-                    
-                <label for="type-filter--poison">
-                    <input type="checkbox" id="type-filter--poison" class="btn--type-filter js-btn--type-filter" name="poison">
-                    <span>poison</span>
-                </label>
-                    
-                <label for="type-filter--ground">
-                    <input type="checkbox" id="type-filter--ground" class="btn--type-filter js-btn--type-filter" name="ground">
-                    <span>ground</span>
-                </label>
-                    
-                <label for="type-filter--rock">
-                    <input type="checkbox" id="type-filter--rock" class="btn--type-filter js-btn--type-filter" name="rock">
-                    <span>rock</span>
-                </label>
-                    
-                <label for="type-filter--bug">
-                    <input type="checkbox" id="type-filter--bug" class="btn--type-filter js-btn--type-filter" name="bug">
-                    <span>bug</span>
-                </label>
-                    
-                <label for="type-filter--ghost">
-                    <input type="checkbox" id="type-filter--ghost" class="btn--type-filter js-btn--type-filter" name="ghost">
-                    <span>ghost</span>
-                </label>
-                    
-                <label for="type-filter--fire">
-                    <input type="checkbox" id="type-filter--fire" class="btn--type-filter js-btn--type-filter" name="fire">
-                    <span>fire</span>
-                </label>
-                    
-                <label for="type-filter--water">
-                    <input type="checkbox" id="type-filter--water" class="btn--type-filter js-btn--type-filter" name="water">
-                    <span>water</span>
-                </label>
-                    
-                <label for="type-filter--grass">
-                    <input type="checkbox" id="type-filter--grass" class="btn--type-filter js-btn--type-filter" name="grass">
-                    <span>grass</span>
-                </label>
-                    
-                <label for="type-filter--electric">
-                    <input type="checkbox" id="type-filter--electric" class="btn--type-filter js-btn--type-filter" name="electric">
-                    <span>electric</span>
-                </label>
-                    
-                <label for="type-filter--psychic">
-                    <input type="checkbox" id="type-filter--psychic" class="btn--type-filter js-btn--type-filter" name="psychic">
-                    <span>psychic</span>
-                </label>
-                    
-                <label for="type-filter--ice">
-                    <input type="checkbox" id="type-filter--ice" class="btn--type-filter js-btn--type-filter" name="ice">
-                    <span>ice</span>
-                </label>
-                    
-                <label for="type-filter--dragon">
-                    <input type="checkbox" id="type-filter--dragon" class="btn--type-filter js-btn--type-filter" name="dragon">
-                    <span>dragon</span>
-                </label>
-                <input type="submit" class="pokedex__pokemon-type-submit js-pokedex__pokemon-type-submit" value="Apply filter">
-            </form>
-        </aside>
+    <main class="pokedex js-pokedex">
+
+        <p class="pokedex__results js-pokedex__results"></p>
+
+        <ul class="pokedex__list js-pokedex__list"></ul>
+
+        <button class="btn--show-next js-btn--show-next">MORE</button>
+
+        <div class="pokedex__pokemon-details-card js-pokedex__pokemon-details-card hidden"></div>
+
+        <div class="pokedex__blank js-pokedex__blank hidden"></div>
+
     </main>
 
-    <footer class="pokedex__footer">
-        <p>c1997</p>
+    <footer class="footer">
+        <p>©1996</p>
     </footer>
 </body>
 <script src="./public/js/main.js" type="module"></script>
