@@ -1,19 +1,25 @@
-#Build a Pokedex using Vanilla JS and Typescript
-- Load a list of pokemon ✔
-- Every pokemon must show: ✔
-    - Img
-    - Id number
-    - Name
-    - Types
-- Filter pokemon by Types ✔
-- Single page for every pokemon showing data and stats ✔
-- Search engine ✔
-- Add loading message at loading pokemon list
+#POKEDEX APP - Javascript + Typescript
 
-#ToDos
-- Improve pokemon data builder
-- Improve url managing ✔
-- Fix max number of available pokemons ✔
-- Fix no filter after filtering case ✔
-- Remove search results + show more button missing when user isn't searching
-- Add page system for all cases
+Showing first generation pokemons (0-151) using PokeApi.
+Includes Search by name and Filter by type.
+
+#WHAT I'VE LEARNT:
+
+- Using REST API:
+    - Fetch & Await
+    - Asynchrony and promises
+    - Minimize number of requests
+
+- Looping arrays searching and filtering objects/values.
+
+- Closures
+    - Pass URL and Pokedex management as factory functions
+
+- Modules
+    - Import/Export
+    - Dividing code in three modules: pokedexUrl, pokedex and main
+
+- Typescript
+    - Run typescript 😎
+    - Hard typing
+    - Creating and using interfaces
