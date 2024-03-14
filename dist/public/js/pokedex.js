@@ -51,11 +51,11 @@ const Pokedex = () => {
         const singleStatTemplate = (stat) => {
             const { name, value } = stat;
             return `
-                <li class="pokemon-stat">
-                    <p class="pokemon-stat--name">${name}</p>
-                    <p class="pokemon-stat--value">${value}</p>
-                </li>
-            `;
+            <div class="pokemon-stat">
+                <p class="pokemon-stat--name">${name}</p>
+                <p class="pokemon-stat--value">${value}</p>
+            </div>
+        `;
         };
         return statsArr.map((stat) => singleStatTemplate(stat)).join('');
     };
@@ -63,54 +63,48 @@ const Pokedex = () => {
     const pokemonCardTemplate = (pokemon) => {
         const { id, sprites, name, types } = pokemon;
         return `
-            <li data-id=${id} class="pokemon-card hover-shadow">
-                <img class="pokemon-sprite" src="${sprites}" alt="${name}">
-                <div class="pokemon-data">
-                    <div class="pokemon-data-row">
-                        <p class="pokemon-name">${name}</p>
-                        <p class="pokemon-number">#${id}</p>
-                    </div>
-                    <div class="pokemon-types">${buildTypesTemplate(types)}</div>
+        <li data-id=${id} class="pokedex__grid-item hover-shadow">
+            <button class="pokemon-card js-btn--show-details">
+                <div class="pokemon-sprite">
+                    <img src="${sprites}" alt="${name}">
                 </div>
-                <button class="btn--show-details js-btn--show-details"/>
-            </li>
-        `;
+                <p class="pokemon-number">#${id}</p>
+                <p class="pokemon-name">${name}</p>
+                <div class="pokemon-types">${buildTypesTemplate(types)}</div>
+            </button>
+        </li>
+    `;
     };
     const pokemonDetailsTemplate = (pokemonStats) => {
         const { id, name, sprites, types, abilities, stats } = pokemonStats;
         return `
-            <div class="pokemon-close-btn">
-                <button class="btn--close-pokemon-details js-btn--close-pokemon-details">Close</button>
+        <div class="pokemon-close-btn">
+            <button class="btn--close-pokemon-details js-btn--close-pokemon-details hover-shadow">close x</button>
+        </div>
+        <div class="pokemon-main-info">
+            <div class="pokemon-sprite">
+                <img src="${sprites}" alt="${name}">
             </div>
-
-            <div class="pokemon-info">
-                <div class="pokemon-main-info">
-                    <img src="${sprites}" class="pokemon-sprite--details" alt="${name}">
-                    <div class="pokemon-data-row">
-                        <h2 class="pokemon-name">${name}</h2>
-                        <p class="pokemon-number">#${id}</p>
-                    </div>
-                    <div class="pokemon-types">
-                        ${buildTypesTemplate(types)}
-                    </div>
+            <p>#${id}</p>
+            <h2>${name}</h2>
+            <div class="pokemon-types">
+                ${buildTypesTemplate(types)}
+            </div>
+        </div>
+       
+        <did class="pokemon-details-info">
+            <div class="pokemon-stats">
+                <h3>Stats</h3>
+                <div>
+                    ${buildStatsTemplate(stats)}
                 </div>
-            
-                <did class="pokemon-details-info">
-                    <div class="pokemon-detail">
-                        <h3 class="pokemon-detail-title">Stats</h3>
-                        <ul class="pokemon-detail-list">
-                            ${buildStatsTemplate(stats)}
-                        </ul>
-                    </div>
-                    <div class="pokemon-detail">
-                        <h3 class="pokemon-detail-title">Abilities</h3>
-                        <ul class=""pokemon-detail-list>
-                            ${buildAbilitiesTemplate(abilities)}
-                        </ul>
-                    </div>
-                </didv>
             </div>
-        `;
+            <div class="pokemon-abilities">
+                <h3>Abilities</h3>
+                ${buildAbilitiesTemplate(abilities)}
+            </div>
+        </didv>
+    `;
     };
     // List management
     const itemsPerPage = 12;
@@ -158,7 +152,7 @@ const Pokedex = () => {
         // Destructuring pokemonData to extract the info we'll need
         let { id, name, sprites, types, abilities, stats } = data;
         // Sprites
-        sprites = sprites.other.dream_world.front_default;
+        sprites = sprites.versions["generation-i"].yellow["front_default"];
         // Types
         types = yield Promise.all(types.map((prop) => prop.type.name));
         // Abilities
@@ -216,16 +210,11 @@ const Pokedex = () => {
         pokemonDetailsCard.innerHTML += yield pokemonDetailsTemplate(pokemonStats);
         showBlank(1);
     });
-    const getPokemonDetails = (event) => __awaiter(void 0, void 0, void 0, function* () {
-        const pokemonStats = yield fetchPokemonDetails(event);
-        console.log(pokemonStats);
-    });
     // Close pokemon details
     const closePokemonDetails = () => {
         pokemonDetailsCard.classList.add("hidden");
         closeBlank();
     };
-    // SINGLE POKEMON PAGE
     // FILTER
     // Updating typesarr
     const updateTypesArr = (target) => {
@@ -297,7 +286,6 @@ const Pokedex = () => {
             loadingList = false;
         }
     };
-    // SCROLL
     // ADDEVENTLISTENERS
     // Select show single pokemon stats buttons
     const SelectshowDetailsButton = () => {
@@ -326,14 +314,6 @@ const Pokedex = () => {
         const showPokemonDetailsButton = SelectshowDetailsButton();
         showPokemonDetailsButton.forEach(el => { el.addEventListener("click", buildPokemonDetails); });
     };
-    // const updateShowDetailsAddEventListeners = () => {
-    //     const showPokemonDetailsButton = SelectshowDetailsButton();
-    //     showPokemonDetailsButton.forEach(el => {el.addEventListener("click", function(e) {
-    //             e.preventDefault();
-    //             getPokemonDetails(e);
-    //         })
-    //     })
-    // }
     return { initializePokedex };
 };
 export default Pokedex;
