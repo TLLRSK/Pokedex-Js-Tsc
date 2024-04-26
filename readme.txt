@@ -1,27 +1,31 @@
-#POKEDEX APP - Javascript + Typescript
+POKEDEX APP 
 
-Showing first generation pokemons (from 0 to 151) using PokeApi.
-Includes Search by name and Filter by type.
+Show, find and filter by type the first generation's pokemons (from 0 to 151) using PokeAPI.
 
-#📗
+Made with:
+ - Html
+ - Css
+ - Javascript
+ - Typescript
 
-WHAT I'VE LEARNT:
+Live:
+https://pokedex-pjgil.netlify.app/
 
-- Using REST API:
-    - Fetch & Await
-    - Asynchrony and promises
-    - Minimize number of requests
 
-- Looping arrays searching and filtering objects/values.
+📗 WHAT I'VE LEARNT 📗
 
-- Closures
-    - Pass URL and Pokedex management as factory functions
+Using REST API:
+- Basic requests.
+- Asynchrony and promises.
+- Minimize number of requests.
+- Destructuring request data.
 
-- Modules
-    - Import/Export
-    - Dividing code in three modules: pokedexUrl, pokedex and main
+Looping arrays searching and filtering objects/values.
 
-- Typescript
-    - Run typescript 😎
-    - Hard typing
-    - Creating and using interfaces
+Closures
+- URL management and Pokedex app as factory functions.
+
+Typescript
+- Run typescript.
+- Hard typing.
+- Creating and using interfaces.
