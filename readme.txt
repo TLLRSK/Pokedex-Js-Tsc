@@ -1,9 +1,11 @@
 #POKEDEX APP - Javascript + Typescript
 
-Showing first generation pokemons (0-151) using PokeApi.
+Showing first generation pokemons (from 0 to 151) using PokeApi.
 Includes Search by name and Filter by type.
 
-#WHAT I'VE LEARNT:
+#📗
+
+WHAT I'VE LEARNT:
 
 - Using REST API:
     - Fetch & Await

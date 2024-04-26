@@ -14,19 +14,14 @@ const Pokedex = () => {
     const pokedexBlank = document.querySelector(".js-pokedex__blank") as HTMLElement;
     const pokedexResults = document.querySelector(".js-pokedex__results") as HTMLElement;
     const pokedexList = document.querySelector(".js-pokedex__list") as HTMLElement;
-
     const pokedexSearchInput = document.querySelector(".js-pokedex__search-input") as HTMLInputElement | null;
     const pokedexSearchSubmit = document.querySelector(".js-pokedex__search-submit")  as HTMLElement;
-
     const showHeaderFilterButton = document.querySelector(".js-header__show-filter-btn") as HTMLElement;
     const headerFilter = document.querySelector(".js-header__filter") as HTMLElement;
     const resetFilterButton = document.querySelector(".js-types__reset-filter") as HTMLElement;
-
     const pokemonTypeCheckbox = document.querySelectorAll(".js-btn--type-filter") as NodeListOf<HTMLInputElement>;
     const pokemonTypeSubmit = document.querySelector(".js-pokedex__pokemon-type-submit") as HTMLInputElement;
-
     const buttonShowMore = document.querySelector(".js-btn--show-next") as HTMLElement;
-
     const pokemonDetailsCard = document.querySelector(".js-pokedex__pokemon-details-card") as HTMLElement;
     const closePokemonDetailsCardBtn = document.querySelector(".js-pokedex__pokemon-details-card") as HTMLElement;
 
@@ -291,9 +286,6 @@ const Pokedex = () => {
         closeBlank();
     }
 
-    // SINGLE POKEMON PAGE
-
-
     // FILTER
 
     // Updating typesarr
@@ -372,8 +364,6 @@ const Pokedex = () => {
         }
     }
 
-    // SCROLL
-
     // ADDEVENTLISTENERS
 
     // Select show single pokemon stats buttons
@@ -412,14 +402,7 @@ const Pokedex = () => {
         const showPokemonDetailsButton = SelectshowDetailsButton();
         showPokemonDetailsButton.forEach(el => {el.addEventListener("click", buildPokemonDetails)});
     }
-    // const updateShowDetailsAddEventListeners = () => {
-    //     const showPokemonDetailsButton = SelectshowDetailsButton();
-    //     showPokemonDetailsButton.forEach(el => {el.addEventListener("click", function(e) {
-    //             e.preventDefault();
-    //             getPokemonDetails(e);
-    //         })
-    //     })
-    // }
+
     return {initializePokedex}
 }
 
