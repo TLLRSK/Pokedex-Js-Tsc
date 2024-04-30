@@ -45,16 +45,32 @@ const Pokedex = () => {
 
     // stats
     const buildStatsTemplate = (statsArr: IPokemonStat[]) => {
-        const singleStatTemplate = (stat: IPokemonStat) => {
-            const {name, value} = stat;
-            return `
+        return `
                 <li class="pokemon-stat">
-                    <p class="pokemon-stat--name">${name}</p>
-                    <p class="pokemon-stat--value">${value}</p>
+                    <p class="pokemon-stat--name">HP</p>
+                    <p class="pokemon-stat--value">${statsArr[0].value}</p>
                 </li>
-            `
-        }
-        return statsArr.map((stat: IPokemonStat) => singleStatTemplate(stat)).join('')
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">ATK</p>
+                    <p class="pokemon-stat--value">${statsArr[1].value}</p>
+                </li>
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">DEF</p>
+                    <p class="pokemon-stat--value">${statsArr[2].value}</p>
+                </li>
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">SATK</p>
+                    <p class="pokemon-stat--value">${statsArr[3].value}</p>
+                </li>
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">SDEF</p>
+                    <p class="pokemon-stat--value">${statsArr[4].value}</p>
+                </li>
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">SPD</p>
+                    <p class="pokemon-stat--value">${statsArr[5].value}</p>
+                </li>
+        `;
     }
 
     // TEMPLATES

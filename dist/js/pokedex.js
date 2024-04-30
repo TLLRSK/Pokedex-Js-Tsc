@@ -48,6 +48,7 @@ const Pokedex = () => {
     };
     // stats
     const buildStatsTemplate = (statsArr) => {
+        console.log(statsArr)
         return `
                 <li class="pokemon-stat">
                     <p class="pokemon-stat--name">HP</p>
@@ -73,7 +74,7 @@ const Pokedex = () => {
                     <p class="pokemon-stat--name">SPD</p>
                     <p class="pokemon-stat--value">${statsArr[5].value}</p>
                 </li>
-        `;
+                `
     };
     // TEMPLATES
     const pokemonCardTemplate = (pokemon) => {
@@ -241,6 +242,7 @@ const Pokedex = () => {
         pokemonDetailsCard.classList.add("hidden");
         closeBlank();
     };
+    // SINGLE POKEMON PAGE
     // FILTER
     // Updating typesarr
     const updateTypesArr = (target) => {
@@ -312,6 +314,7 @@ const Pokedex = () => {
             loadingList = false;
         }
     };
+    // SCROLL
     // ADDEVENTLISTENERS
     // Select show single pokemon stats buttons
     const SelectshowDetailsButton = () => {
@@ -340,6 +343,14 @@ const Pokedex = () => {
         const showPokemonDetailsButton = SelectshowDetailsButton();
         showPokemonDetailsButton.forEach(el => { el.addEventListener("click", buildPokemonDetails); });
     };
+    // const updateShowDetailsAddEventListeners = () => {
+    //     const showPokemonDetailsButton = SelectshowDetailsButton();
+    //     showPokemonDetailsButton.forEach(el => {el.addEventListener("click", function(e) {
+    //             e.preventDefault();
+    //             getPokemonDetails(e);
+    //         })
+    //     })
+    // }
     return { initializePokedex };
 };
 export default Pokedex;
