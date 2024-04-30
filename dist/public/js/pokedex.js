@@ -48,16 +48,32 @@ const Pokedex = () => {
     };
     // stats
     const buildStatsTemplate = (statsArr) => {
-        const singleStatTemplate = (stat) => {
-            const { name, value } = stat;
-            return `
+        return `
                 <li class="pokemon-stat">
-                    <p class="pokemon-stat--name">${name}</p>
-                    <p class="pokemon-stat--value">${value}</p>
+                    <p class="pokemon-stat--name">HP</p>
+                    <p class="pokemon-stat--value">${statsArr[0].value}</p>
                 </li>
-            `;
-        };
-        return statsArr.map((stat) => singleStatTemplate(stat)).join('');
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">ATK</p>
+                    <p class="pokemon-stat--value">${statsArr[1].value}</p>
+                </li>
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">DEF</p>
+                    <p class="pokemon-stat--value">${statsArr[2].value}</p>
+                </li>
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">SATK</p>
+                    <p class="pokemon-stat--value">${statsArr[3].value}</p>
+                </li>
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">SDEF</p>
+                    <p class="pokemon-stat--value">${statsArr[4].value}</p>
+                </li>
+                <li class="pokemon-stat">
+                    <p class="pokemon-stat--name">SPD</p>
+                    <p class="pokemon-stat--value">${statsArr[5].value}</p>
+                </li>
+        `;
     };
     // TEMPLATES
     const pokemonCardTemplate = (pokemon) => {
@@ -225,7 +241,6 @@ const Pokedex = () => {
         pokemonDetailsCard.classList.add("hidden");
         closeBlank();
     };
-    // SINGLE POKEMON PAGE
     // FILTER
     // Updating typesarr
     const updateTypesArr = (target) => {
@@ -297,7 +312,6 @@ const Pokedex = () => {
             loadingList = false;
         }
     };
-    // SCROLL
     // ADDEVENTLISTENERS
     // Select show single pokemon stats buttons
     const SelectshowDetailsButton = () => {
@@ -326,14 +340,6 @@ const Pokedex = () => {
         const showPokemonDetailsButton = SelectshowDetailsButton();
         showPokemonDetailsButton.forEach(el => { el.addEventListener("click", buildPokemonDetails); });
     };
-    // const updateShowDetailsAddEventListeners = () => {
-    //     const showPokemonDetailsButton = SelectshowDetailsButton();
-    //     showPokemonDetailsButton.forEach(el => {el.addEventListener("click", function(e) {
-    //             e.preventDefault();
-    //             getPokemonDetails(e);
-    //         })
-    //     })
-    // }
     return { initializePokedex };
 };
 export default Pokedex;
