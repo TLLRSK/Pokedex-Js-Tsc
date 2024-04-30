@@ -49,16 +49,6 @@ const Pokedex = () => {
     // stats
     const buildStatsTemplate = (statsArr) => {
         console.log(statsArr)
-        // const singleStatTemplate = (stat) => {
-        //     const { name, value } = stat;
-        //     return `
-        //         <li class="pokemon-stat">
-        //             <p class="pokemon-stat--name">${name}</p>
-        //             <p class="pokemon-stat--value">${value}</p>
-        //         </li>
-        //     `;
-        // };
-        // return statsArr.map((stat) => singleStatTemplate(stat)).join('');
         return `
                 <li class="pokemon-stat">
                     <p class="pokemon-stat--name">HP</p>
